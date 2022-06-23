@@ -24,13 +24,34 @@ local function index_layer(layer)
         local output = f:read("*a")
         for line in output:gmatch("[^\n]+") do
             M.index[#M.index+1] = get_package(line)
-            print(M.index[#M.index][1], M.index[#M.index][2])
         end
     end
 end
 
-print(index_layer("/home/vin/projects/yocto/poky/meta"))
-print(index_layer("/home/vin/projects/yocto/poky/meta-poky/"))
-print(index_layer("/home/vin/projects/yocto/poky/meta-yocto-bsp//"))
+local function get_layer_path(line)
+    for w in line:gmatch("%S+") do
+        if string.match(w, "/") then
+            return w
+        end
+    end
 
+    return nil
+end
+
+local function get_layers()
+    local f = io.popen("bitbake-layers show-layers")
+    if f ~= nil then
+        local output = f:read("*a")
+        for line in output:gmatch("[^\n]+") do
+            if string.match(line, "/") then
+                local layer = get_layer_path(line)
+                if layer ~= nil then
+                    index_layer(layer)
+                end
+            end
+        end
+    end
+end
+
+print(get_layers())
 print(#M.index)
