@@ -59,8 +59,12 @@ local function get_layers()
                 end
             end
         end
+        return f:close()
     end
 end
 
-print(get_layers())
-print(#M.index)
+if get_layers() then
+    print(#M.index)
+else
+    print("No layers found, please run in yocto sourced shell")
+end
