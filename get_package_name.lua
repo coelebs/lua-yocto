@@ -21,8 +21,8 @@ local function index_recipe(filename, layer)
     end
 
     local recipe = {}
-    recipe["filename"] = filename
-    recipe["layer"] = layer
+    recipe.filename = filename
+    recipe.layer = layer
 
     if M.index[name] == nil then
         M.index[name] = {}
@@ -34,7 +34,7 @@ end
 -- Iterate over every file in the layer directory with a bitbake extension and parse the package
 -- @param layer: layer directory
 local function index_layer(layer)
-    local f = io.popen("find " .. layer["path"] .. " -iname \"*.bb\"")
+    local f = io.popen("find " .. layer.path .. " -iname \"*.bb\"")
     if f ~= nil then
         local output = f:read("*a")
         for line in output:gmatch("[^\n]+") do
@@ -48,12 +48,12 @@ end
 -- @param index: bb layer index
 local function get_layer(line, index)
     local layer = {}
-    layer["index"] = index
+    layer.index = index
 
     local el = line:gmatch("%S+")
-    layer["name"] = el()
-    layer["path"] = el()
-    layer["priority"] = el()
+    layer.name = el()
+    layer.path = el()
+    layer.priority = el()
 
     return layer
 end
