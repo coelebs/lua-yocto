@@ -34,7 +34,7 @@ end
 -- Iterate over every file in the layer directory with a bitbake extension and parse the package
 -- @param layer: layer directory
 local function index_layer(layer)
-    local f = io.popen("find " .. layer.path .. " -iname \"*.bb\"")
+    local f = io.popen("find " .. layer.path .. " -iname \"*.bb\" -o -iname \"*.bbappend\"")
     if f ~= nil then
         local output = f:read("*a")
         for line in output:gmatch("[^\n]+") do
