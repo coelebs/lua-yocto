@@ -116,17 +116,26 @@ local function get_layers()
     return f:close()
 end
 
-if get_layers() then
-    for name, versions in pairs(M.index) do
-        for version, recipes in pairs(versions) do
-            if #recipes > 1 then
-                print(name .. " " .. version .. ":")
-                for _, recipe in pairs(recipes) do
-                    print("\t" .. recipe.filename)
-                end
+local pickers = require "telescope.pickers"
+local finders = require "telescope.finders"
+local conf = require("telescope.config").values
+local function pick_recipe()
+    get_layers()
+
+    pickers.new({}, {
+        prompt_title = "Select recipe: ",
+        finder = finders.new_table {
+            results = M.index["busybox"]["1.35.0"],
+            entry_maker = function(entry)
+                return {
+                    value = entry,
+                    display = entry.filename,
+                    ordinal = entry.filename,
+                }
             end
-        end
-    end
-else
-    print("No layers found, please run in yocto sourced shell")
+        },
+        sorter = conf.generic_sorter({}),
+    }):find()
 end
+
+pick_recipe()
