@@ -116,7 +116,9 @@ local function get_layers()
     return f:close()
 end
 
-local function get_recipe(buf_name, buf_version)
+local function get_recipe(filename)
+    local buf_name, buf_version = parse_filename(filename)
+
     for version, recipes in pairs(M.index[buf_name]) do
         if buf_version == nil or buf_version == version then
             return recipes
@@ -125,11 +127,8 @@ local function get_recipe(buf_name, buf_version)
 end
 
 local function get_upper()
-    get_layers()
-    local filename = vim.fn.expand("%:p")
-    local buf_name, buf_version = parse_filename(filename)
-
-    local recipes = get_recipe(buf_name, buf_version)
+    local filename = vim.api.nvim_buf_get_name(0)
+    local recipes = get_recipe(filename)
 
     local upper = -1
     for i, recipe in ipairs(recipes) do
@@ -141,11 +140,26 @@ local function get_upper()
     end
 
     if upper >= 0 then
-        vim.api.nvim_command("edit " .. recipes[upper].filename)
+        local bufid = vim.fn.bufnr(recipes[upper].filename, true)
+        vim.api.nvim_set_current_buf(bufid)
+    end
+end
+
+local function get_lower()
+    local filename = vim.api.nvim_buf_get_name(0)
+    vim.notify(filename)
+    local recipes = get_recipe(filename)
+
+    for i, recipe in ipairs(recipes) do
+        if recipe.filename == filename and #recipes > i then
+            local bufid = vim.fn.bufnr(recipes[i+1].filename, true)
+            vim.api.nvim_set_current_buf(bufid)
+        end
     end
 end
 
 M.setup = get_layers
 M.upper = get_upper
+M.lower = get_lower
 
 return M
