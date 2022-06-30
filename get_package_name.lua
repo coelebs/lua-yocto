@@ -1,4 +1,4 @@
-M = {}
+local M = {}
 
 M.index = {}
 
@@ -116,26 +116,36 @@ local function get_layers()
     return f:close()
 end
 
-local pickers = require "telescope.pickers"
-local finders = require "telescope.finders"
-local conf = require("telescope.config").values
-local function pick_recipe()
-    get_layers()
-
-    pickers.new({}, {
-        prompt_title = "Select recipe: ",
-        finder = finders.new_table {
-            results = M.index["busybox"]["1.35.0"],
-            entry_maker = function(entry)
-                return {
-                    value = entry,
-                    display = entry.filename,
-                    ordinal = entry.filename,
-                }
-            end
-        },
-        sorter = conf.generic_sorter({}),
-    }):find()
+local function get_recipe(buf_name, buf_version)
+    for version, recipes in pairs(M.index[buf_name]) do
+        if buf_version == nil or buf_version == version then
+            return recipes
+        end
+    end
 end
 
-pick_recipe()
+local function get_upper()
+    get_layers()
+    local filename = vim.fn.expand("%:p")
+    local buf_name, buf_version = parse_filename(filename)
+
+    local recipes = get_recipe(buf_name, buf_version)
+
+    local upper = -1
+    for i, recipe in ipairs(recipes) do
+        if recipe.filename == filename then
+            break
+        end
+
+        upper = i
+    end
+
+    if upper >= 0 then
+        vim.api.nvim_command("edit " .. recipes[upper].filename)
+    end
+end
+
+M.setup = get_layers
+M.upper = get_upper
+
+return M
